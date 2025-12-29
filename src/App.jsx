@@ -4,7 +4,6 @@ import { getDetails } from './utils';
 
 import DexButtons from './components/DexButtons/DexButtons';
 import TypedSequence from './components/TypedSequence/TypedSequence';
-import Pokeball from './components/Pokeball/Pokeball';
 
 function App() {
   const [pokemon, setPokemon] = useState([]);
@@ -12,11 +11,11 @@ function App() {
   const [currentSelection, setCurrentSelection] = useState(null);
   const [currentStreak, setCurrentStreak] = useState(0);
   const [shuffling, setShuffling] = useState(false);
+  const [end, setEnd] = useState(false);
 
   const displayLanding = pokemon.length === 0 && !loading;
   const displaySelected = !!currentSelection;
   const displayShuffle = !!shuffling;
-  const end = currentStreak === 8;
   const displayChoose =
     !displayLanding && !displaySelected && !displayShuffle && !end;
 
@@ -42,7 +41,7 @@ function App() {
   }
 
   useEffect(() => {
-    if (!currentSelection) return;
+    if (!currentSelection || currentStreak >= 8) return;
 
     const timeout = setTimeout(() => {
       setShuffling(true);
@@ -54,7 +53,7 @@ function App() {
         clearTimeout(timeout);
       }
     };
-  }, [currentSelection]);
+  }, [currentSelection, currentStreak]);
 
   useEffect(() => {
     if (!shuffling) return;
@@ -72,6 +71,21 @@ function App() {
     };
   }, [shuffling, pokemon]);
 
+  useEffect(() => {
+    if (currentStreak < 8) return;
+
+    const timeout = setTimeout(() => {
+      setCurrentSelection(null);
+      setEnd((prev) => !prev);
+    }, 3000);
+
+    return () => {
+      if (timeout) {
+        clearTimeout(timeout);
+      }
+    };
+  }, [currentStreak]);
+
   function handleOk(data) {
     setCurrentSelection(data);
     setCurrentStreak((prev) => prev + 1);
@@ -81,6 +95,13 @@ function App() {
     setCurrentStreak(0);
     setCurrentSelection(null);
     setPokemon([]);
+  }
+
+  function handleNewGame() {
+    setCurrentStreak(0);
+    setCurrentSelection(null);
+    setEnd(false);
+    getRandomPokemonSet(8);
   }
 
   return (
@@ -99,9 +120,7 @@ function App() {
                 ]}
                 delayMs={20}
               />
-              <Button onClick={() => getRandomPokemonSet(8)}>
-                Upload New Pokemon
-              </Button>
+              <Button onClick={handleNewGame}>Upload New Pokemon</Button>
             </>
           )}
           {displaySelected && (
@@ -124,8 +143,8 @@ function App() {
               <TypedSequence
                 strings={['Choose next unique pokemon to analyze.']}
                 delayMs={30}
+                pokeball={true}
               />
-              <Pokeball />
             </>
           )}
           {end && (
@@ -136,10 +155,9 @@ function App() {
                   'Detected need for further diagnostics.',
                   'Awaiting new data...',
                 ]}
+                delayMs={20}
               />
-              <Button onClick={() => getRandomPokemonSet(8)}>
-                Upload New Pokemon
-              </Button>
+              <Button onClick={handleNewGame}>Upload New Pokemon</Button>
             </>
           )}
         </Content>
@@ -202,6 +220,7 @@ const Button = styled.button`
   border-radius: 6px;
   padding: 0.5rem;
   padding-bottom: 0.3rem;
+  cursor: pointer;
 `;
 
 const Streak = styled.p`

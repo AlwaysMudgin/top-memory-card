@@ -19,7 +19,7 @@ function DexButtons({ pokemon, shuffling, current, ok, fail }) {
   return (
     <Buttons>
       {pokemon.map((data, index) => {
-        const delay = 0.1 + index;
+        const delay = 0.1 + index / 10;
         return (
           <Pokemon
             key={data.id}

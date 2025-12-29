@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import styled from 'styled-components';
 
-function TypedSequence({ strings, delayMs }) {
+import Pokeball from '../Pokeball/Pokeball';
+
+function TypedSequence({ strings, delayMs, pokeball }) {
   const [stringsIndex, setStringsIndex] = useState(0);
   const [charIndex, setCharIndex] = useState(0);
   const [typing, setTyping] = useState(true);
@@ -46,6 +48,7 @@ function TypedSequence({ strings, delayMs }) {
           {typing && <Cursor>Q</Cursor>}
         </Paragraph>
       )}
+      {!typing && pokeball && <Pokeball />}
     </>
   );
 }
