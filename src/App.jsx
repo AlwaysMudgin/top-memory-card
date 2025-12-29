@@ -17,7 +17,7 @@ function App() {
   const displaySelected = !!currentSelection;
   const displayShuffle = !!shuffling;
   const displayChoose =
-    !displayLanding && !displaySelected && !displayShuffle && !end;
+    !loading && !displayLanding && !displaySelected && !displayShuffle && !end;
 
   async function getRandomPokemonSet(amount) {
     setLoading(true);
