@@ -58,7 +58,9 @@ function App() {
   useEffect(() => {
     if (!shuffling) return;
 
-    pokemon.sort(() => 0.5 - Math.random());
+    const shuffle = setInterval(() => {
+      setPokemon((prev) => [...prev].sort(() => 0.5 - Math.random()));
+    }, 400);
 
     const timeout = setTimeout(() => {
       setShuffling(false);
@@ -68,8 +70,11 @@ function App() {
       if (timeout) {
         clearTimeout(timeout);
       }
+      if (shuffle) {
+        clearInterval(shuffle);
+      }
     };
-  }, [shuffling, pokemon]);
+  }, [shuffling]);
 
   useEffect(() => {
     if (currentStreak < 8) return;

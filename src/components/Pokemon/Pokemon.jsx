@@ -14,7 +14,11 @@ function Pokemon({ data, ok, fail, selected, blinking, delay }) {
   }
 
   if (blinking) {
-    return <BlinkingButton $delay={delay}></BlinkingButton>;
+    return (
+      <BlinkingButton $delay={delay}>
+        {data && <img src={data.sprites.front_default} />}
+      </BlinkingButton>
+    );
   }
 
   return (
