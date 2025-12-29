@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { getDetails } from './utils';
 
@@ -12,12 +12,16 @@ function App() {
   const [currentStreak, setCurrentStreak] = useState(0);
   const [shuffling, setShuffling] = useState(false);
   const [end, setEnd] = useState(false);
+  const [audioSource, setAudioSource] = useState(null);
+  const [muted, setMuted] = useState(false);
 
   const displayLanding = pokemon.length === 0 && !loading;
   const displaySelected = !!currentSelection;
   const displayShuffle = !!shuffling;
   const displayChoose =
     !loading && !displayLanding && !displaySelected && !displayShuffle && !end;
+
+  const audioRef = useRef();
 
   async function getRandomPokemonSet(amount) {
     setLoading(true);
@@ -91,8 +95,19 @@ function App() {
     };
   }, [currentStreak]);
 
+  useEffect(() => {
+    if (!audioRef.current) return;
+
+    audioRef.current.volume = 0.1;
+
+    audioRef.current
+      .play()
+      .catch((err) => console.log('Autoplay prevented', err));
+  }, [audioSource]);
+
   function handleOk(data) {
     setCurrentSelection(data);
+    setAudioSource(data.cries.legacy);
     setCurrentStreak((prev) => prev + 1);
   }
 
@@ -110,72 +125,76 @@ function App() {
   }
 
   return (
-    <Wrapper>
-      <MainDisplay>
-        <Content>
-          {loading && <p>Loading...</p>}
-          {displayLanding && (
-            <>
+    <>
+      <Wrapper>
+        <MainDisplay>
+          <Content>
+            {loading && <p>Loading...</p>}
+            {displayLanding && (
+              <>
+                <TypedSequence
+                  strings={[
+                    '// ERROR: Pokemon data corrupted',
+                    'Entering diagnostic mode...',
+                    'Tracking unique selections...',
+                    'Please try again.',
+                  ]}
+                  delayMs={20}
+                />
+                <Button onClick={handleNewGame}>Upload New Pokemon</Button>
+              </>
+            )}
+            {displaySelected && (
+              <TypedSequence
+                strings={getDetails(currentSelection)}
+                delayMs={20}
+              />
+            )}
+            {displayShuffle && (
               <TypedSequence
                 strings={[
-                  '// ERROR: Pokemon data corrupted',
-                  'Entering diagnostic mode...',
-                  'Tracking unique selections...',
-                  'Please try again.',
+                  '~/Connection interrupted',
+                  'Retrieving session data...',
                 ]}
                 delayMs={20}
               />
-              <Button onClick={handleNewGame}>Upload New Pokemon</Button>
-            </>
-          )}
-          {displaySelected && (
-            <TypedSequence
-              strings={getDetails(currentSelection)}
-              delayMs={20}
-            />
-          )}
-          {displayShuffle && (
-            <TypedSequence
-              strings={[
-                '~/Connection interrupted',
-                'Retrieving session data...',
-              ]}
-              delayMs={20}
-            />
-          )}
-          {displayChoose && (
-            <>
-              <TypedSequence
-                strings={['Choose next unique pokemon to analyze.']}
-                delayMs={30}
-                pokeball={true}
-              />
-            </>
-          )}
-          {end && (
-            <>
-              <TypedSequence
-                strings={[
-                  'Pokemon successfully logged.',
-                  'Detected need for further diagnostics.',
-                  'Awaiting new data...',
-                ]}
-                delayMs={20}
-              />
-              <Button onClick={handleNewGame}>Upload New Pokemon</Button>
-            </>
-          )}
-        </Content>
-        <Streak>Streak: {currentStreak}</Streak>
-      </MainDisplay>
-      <DexButtons
-        pokemon={pokemon}
-        shuffling={shuffling}
-        current={currentSelection}
-        ok={handleOk}
-        fail={handleRepeat}
-      />
-    </Wrapper>
+            )}
+            {displayChoose && (
+              <>
+                <TypedSequence
+                  strings={['Choose next unique pokemon to analyze.']}
+                  delayMs={30}
+                  pokeball={true}
+                />
+              </>
+            )}
+            {end && (
+              <>
+                <TypedSequence
+                  strings={[
+                    'Pokemon successfully logged.',
+                    'Detected need for further diagnostics.',
+                    'Awaiting new data...',
+                  ]}
+                  delayMs={20}
+                />
+                <Button onClick={handleNewGame}>Upload New Pokemon</Button>
+              </>
+            )}
+          </Content>
+          <Streak>Streak: {currentStreak}</Streak>
+        </MainDisplay>
+        <DexButtons
+          pokemon={pokemon}
+          shuffling={shuffling}
+          current={currentSelection}
+          ok={handleOk}
+          fail={handleRepeat}
+        />
+      </Wrapper>
+      <audio ref={audioRef} src={audioSource} muted={muted} volume={0.5} />
+      <Mute onClick={() => setMuted(!muted)}>{muted ? 'Unmute' : 'Mute'}</Mute>
+    </>
   );
 }
 
@@ -233,6 +252,12 @@ const Streak = styled.p`
   color: #0f380f;
   top: 0.5rem;
   right: 0.5rem;
+`;
+
+const Mute = styled.button`
+  position: fixed;
+  top: 0;
+  right: 0;
 `;
 
 export default App;
