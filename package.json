@@ -1,5 +1,5 @@
 {
-  "name": "my-first-react-app",
+  "name": "top-memory-card",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,8 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@balldontlie/sdk": "^1.2.2",
+    "pokedex-promise-v2": "^4.2.1",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.1",
